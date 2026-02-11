@@ -132,7 +132,7 @@
         
         .slots-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -224,19 +224,25 @@
         
         .booking-form {
             display: flex;
+            flex-direction: column;
+            align-items: center;
             gap: 10px;
         }
         
         button {
-            padding: 15px 30px;
+            padding: 12px 28px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 1.1em;
+            font-size: 1.05em;
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.2s;
+            display: block;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
         }
         
         button:hover {
@@ -271,14 +277,23 @@
             color: #856404;
         }
         
-        @media (max-width: 768px) {
-            .content {
-                grid-template-columns: 1fr;
-            }
-            
-            .slots-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
+        @media (max-width: 1100px) {
+            .slots-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        @media (max-width: 900px) {
+            .slots-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .content { grid-template-columns: 1fr; }
+            .slots-grid { grid-template-columns: repeat(2, 1fr); }
+            button { max-width: 320px; }
+        }
+
+        @media (max-width: 420px) {
+            .slots-grid { grid-template-columns: repeat(1, 1fr); }
+            button { width: 100%; }
         }
     </style>
 </head>
@@ -307,28 +322,39 @@
             <!-- TIME SLOTS -->
             <div class="main">
                 <h3>⏰ Available Time Slots</h3>
-                
-                {% if available_slots %}
-                <form method="POST" class="booking-form">
-                    <div class="slots-grid">
-                        {% for slot in available_slots %}
-                        <label class="slot-wrapper">
-                            <input type="radio" name="slot_id" value="{{ slot[0] }}" required>
-                            <div class="slot">
-                                <div class="slot-date">{{ slot[3] }}</div>
-                                <div class="slot-time">{{ slot[4] }}</div>
-                                <div class="slot-court">Court {{ slot[2] }}</div>
-                            </div>
-                        </label>
-                        {% endfor %}
-                    </div>
-                    <button type="submit">📝 Book Selected Slot</button>
-                </form>
-                {% else %}
-                <div class="no-slots">
-                    <strong>No available slots</strong> for this facility. Try selecting another facility!
+                {% if booking_error %}
+                <div style="padding:12px; background:#ffe6e6; border:1px solid #ffb3b3; color:#900; border-radius:8px; margin-bottom:12px;">
+                    {{ booking_error }}
                 </div>
                 {% endif %}
+                
+                <!-- Facility info for JS generation -->
+                {% for facility in facilities %}
+                    {% if facility[0] == selected_facility %}
+                        <div id="facility-info" data-id="{{ facility[0] }}" data-name="{{ facility[1] }}" data-courts="{{ facility[3] }}" style="display:none;"></div>
+                    {% endif %}
+                {% endfor %}
+
+                <form method="POST" class="booking-form">
+                    <div style="width:100%; display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
+                        <label style="font-weight:600; color:#333;">Choose date:</label>
+                        <input type="date" id="date-picker" name="date" required>
+
+                        <div id="court-container" style="display:none; align-items:center; gap:8px;">
+                            <label style="font-weight:600; color:#333;">Court:</label>
+                            <select id="court-select" name="court"></select>
+                        </div>
+                    </div>
+
+                    <div class="slots-grid" id="generated-slots">
+                        <!-- JS will populate one-hour slots here -->
+                    </div>
+
+                    <input type="hidden" name="slot_time" id="selected-slot-time">
+                    <input type="hidden" name="selected_court" id="selected-court-hidden">
+
+                    <button type="submit" id="confirm-btn">📝 Book Selected Slot</button>
+                </form>
                 
                 <a href="/my-bookings" class="back-btn">← View My Bookings</a>
             </div>
@@ -339,6 +365,135 @@
         function selectFacility(facilityId) {
             window.location.href = '/book?facility=' + facilityId;
         }
+        // --- Slot generation and selection logic ---
+        (function() {
+            const infoEl = document.getElementById('facility-info');
+            if (!infoEl) return; // nothing selected
+
+            const facilityName = (infoEl.dataset.name || '').toLowerCase();
+            const courts = parseInt(infoEl.dataset.courts || '1', 10) || 1;
+
+            const datePicker = document.getElementById('date-picker');
+            const slotsContainer = document.getElementById('generated-slots');
+            const courtContainer = document.getElementById('court-container');
+            const courtSelect = document.getElementById('court-select');
+            const selectedSlotInput = document.getElementById('selected-slot-time');
+            const selectedCourtHidden = document.getElementById('selected-court-hidden');
+
+            // initialize date picker to today
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            datePicker.value = `${yyyy}-${mm}-${dd}`;
+
+            // Populate courts if more than one
+            if (courts > 1) {
+                courtContainer.style.display = 'flex';
+                courtSelect.innerHTML = '';
+                for (let i = 1; i <= courts; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = `Court ${i}`;
+                    courtSelect.appendChild(opt);
+                }
+                selectedCourtHidden.value = courtSelect.value;
+                courtSelect.addEventListener('change', () => {
+                    selectedCourtHidden.value = courtSelect.value;
+                });
+            } else {
+                courtContainer.style.display = 'none';
+                selectedCourtHidden.value = '1';
+            }
+
+            async function generateSlots() {
+                // Table Tennis and Carrom cutoff at 17:00 (5pm end)
+                const special = facilityName.includes('table') || facilityName.includes('carrom');
+                const startHour = 9; // 9:00
+                const endHourExclusive = special ? 18 : 21; // if special, last start is 17:00; else last start is 20:00 (slot 20-21)
+
+                slotsContainer.innerHTML = '';
+
+                // fetch already booked slots for this facility + date
+                const facilityId = infoEl.dataset.id;
+                const dateVal = datePicker.value;
+                let booked = [];
+                try {
+                    const resp = await fetch(`/api/booked_slots?facility=${facilityId}&date=${dateVal}`);
+                    if (resp.ok) booked = await resp.json();
+                } catch (e) {
+                    console.warn('Could not fetch booked slots', e);
+                }
+
+                for (let h = startHour; h < endHourExclusive; h++) {
+                    const slotLabel = document.createElement('label');
+                    slotLabel.className = 'slot-wrapper';
+
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'slot_radio';
+                    radio.required = true;
+                    // value: ISO date + start time
+                    const dateVal = datePicker.value;
+                    const hh = String(h).padStart(2, '0');
+                    const startTime = `${hh}:00`;
+                    radio.value = `${dateVal}|${startTime}`;
+
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = 'slot';
+
+                    const slotDateDiv = document.createElement('div');
+                    slotDateDiv.className = 'slot-date';
+                    slotDateDiv.textContent = dateVal;
+
+                    const slotTimeDiv = document.createElement('div');
+                    slotTimeDiv.className = 'slot-time';
+                    const endH = String(h + 1).padStart(2, '0');
+                    slotTimeDiv.textContent = `${hh}:00 - ${endH}:00`;
+
+                    const slotCourtDiv = document.createElement('div');
+                    slotCourtDiv.className = 'slot-court';
+                    slotCourtDiv.textContent = courts > 1 ? `Select court above` : `Court 1`;
+
+                    slotDiv.appendChild(slotDateDiv);
+                    slotDiv.appendChild(slotTimeDiv);
+                    slotDiv.appendChild(slotCourtDiv);
+
+                    slotLabel.appendChild(radio);
+                    slotLabel.appendChild(slotDiv);
+
+                    // when selected, update hidden inputs so server gets chosen values
+                    radio.addEventListener('change', (ev) => {
+                        selectedSlotInput.value = ev.target.value; // date|HH:MM
+                        selectedCourtHidden.value = courtSelect ? courtSelect.value || '1' : '1';
+                    });
+
+                    // disable if already booked for selected court
+                    const isBookedForSelectedCourt = booked.some(b => b.time === startTime && String(b.court) === String(courtSelect ? courtSelect.value : '1'));
+                    if (isBookedForSelectedCourt) {
+                        radio.disabled = true;
+                        slotDiv.style.opacity = '0.45';
+                        slotDiv.style.pointerEvents = 'none';
+                        const bookedTag = document.createElement('div');
+                        bookedTag.style.marginTop = '8px';
+                        bookedTag.style.color = '#c00';
+                        bookedTag.style.fontWeight = '700';
+                        bookedTag.textContent = 'Booked';
+                        slotDiv.appendChild(bookedTag);
+                    }
+
+                    slotsContainer.appendChild(slotLabel);
+                }
+            }
+
+            // Regenerate slots when date changes
+            datePicker.addEventListener('change', generateSlots);
+            // Also regenerate when court changes (just to keep values in sync)
+            if (courtSelect) courtSelect.addEventListener('change', generateSlots);
+
+            // initial generation
+            generateSlots();
+        })();
     </script>
 </body>
 </html>

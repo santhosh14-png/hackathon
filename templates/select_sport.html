@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Sport - Sports Booking</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f3f6ff; padding: 30px; }
+        .card { max-width: 900px; margin: 0 auto; background: white; padding: 24px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+        h1 { margin-bottom: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+        .sport { padding: 16px; border-radius: 10px; background: #f7f9ff; cursor: pointer; border: 1px solid #e6ecff; text-align: center; }
+        .sport:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(102,126,234,0.12); }
+        .sport .name { font-weight:700; margin-bottom:6px; }
+        .sport .count { color:#666; font-size:0.9em; }
+        a.back { display:inline-block; margin-top:16px; color:#333; text-decoration:none; }
+        @media (max-width:800px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width:480px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Choose a Sport</h1>
+        <p>Select the sport you want to book — we'll show available facilities and slots next.</p>
+
+        <div class="grid">
+            {% for sport, count in sports %}
+            <div class="sport" onclick="location.href='/book?sport={{ sport | urlencode }}'">
+                <div class="name">{{ sport }}</div>
+                <div class="count">{{ count }} facility(ies)</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <a class="back" href="/">← Back Home</a>
+    </div>
+</body>
+</html>

@@ -68,6 +68,34 @@ def init_db():
     conn.commit()
     conn.close()
 
+
+def ampm_to_24(time_str):
+    """Convert times like '9:00 AM' or '12:30 PM' to '09:00' 24h format."""
+    try:
+        t = datetime.strptime(time_str.strip(), '%I:%M %p')
+        return t.strftime('%H:%M')
+    except Exception:
+        # try if already in HH:MM
+        try:
+            t = datetime.strptime(time_str.strip(), '%H:%M')
+            return t.strftime('%H:%M')
+        except Exception:
+            return time_str
+
+
+def _24_to_ampm(time24):
+    try:
+        t = datetime.strptime(time24.strip(), '%H:%M')
+        hour = t.hour
+        minute = t.minute
+        suffix = 'AM' if hour < 12 else 'PM'
+        hour12 = hour % 12
+        if hour12 == 0:
+            hour12 = 12
+        return f"{hour12}:{minute:02d} {suffix}"
+    except Exception:
+        return time24
+
 # Initialize database
 init_db()
 
@@ -75,6 +103,21 @@ init_db()
 @app.route('/')
 def home():
     return render_template('index.html')
+
+
+# SPORT SELECTION PAGE
+@app.route('/select-sport')
+def select_sport():
+    if 'username' not in session:
+        return redirect('/login')
+
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    # list distinct sports and count of facilities per sport
+    c.execute('SELECT sport, COUNT(*) FROM facilities GROUP BY sport ORDER BY sport')
+    sports = c.fetchall()
+    conn.close()
+    return render_template('select_sport.html', sports=sports)
 
 # LOGIN/SIGNUP PAGE
 @app.route('/login', methods=['GET', 'POST'])
@@ -95,7 +138,7 @@ def login():
                 conn.commit()
                 session['username'] = username
                 conn.close()
-                return redirect('/book')
+                return redirect('/select-sport')
             except sqlite3.IntegrityError:
                 error = "Username already exists!"
             conn.close()
@@ -107,7 +150,7 @@ def login():
             
             if result and result[0] == password:
                 session['username'] = username
-                return redirect('/book')
+                return redirect('/select-sport')
             else:
                 error = "Invalid username or password!"
     
@@ -126,8 +169,18 @@ def book():
     c.execute('SELECT id, name, sport, count FROM facilities')
     facilities = c.fetchall()
     
-    # Get available slots for selected facility (default to first facility)
-    selected_facility = request.args.get('facility', '1')
+    # Determine selected facility: allow selecting by facility id or by sport name
+    selected_facility = request.args.get('facility')
+    sport_param = request.args.get('sport')
+
+    if not selected_facility and sport_param:
+        # pick first facility matching the sport
+        c.execute('SELECT id FROM facilities WHERE sport = ? LIMIT 1', (sport_param,))
+        row = c.fetchone()
+        selected_facility = str(row[0]) if row else '1'
+
+    if not selected_facility:
+        selected_facility = '1'
     available_slots = []
     
     c.execute('''SELECT s.id, f.name, s.court_number, s.date, s.time 
@@ -138,31 +191,61 @@ def book():
     available_slots = c.fetchall()
     
     # Handle booking
+    booking_error = None
     if request.method == 'POST':
-        slot_id = request.form.get('slot_id')
-        
-        if slot_id:
-            c.execute('SELECT facility_id, court_number, date, time FROM slots WHERE id = ?',
-                     (slot_id,))
-            slot_data = c.fetchone()
-            
-            if slot_data:
-                facility_id, court_num, date, time = slot_data
-                
-                # Mark slot as booked
-                c.execute('UPDATE slots SET is_booked = 1 WHERE id = ?', (slot_id,))
-                
-                # Create booking record
-                formatted = f"{date} at {time} (Court {court_num})"
-                c.execute('''INSERT INTO bookings 
-                           (username, facility_id, court_number, date, time, formatted_slot)
-                           VALUES (?, ?, ?, ?, ?, ?)''',
-                         (session['username'], facility_id, court_num, date, time, formatted))
-                
-                conn.commit()
-        
-        conn.close()
-        return redirect('/my-bookings')
+        # New form uses slot_time (date|HH:MM) and selected_court
+        slot_time_val = request.form.get('slot_time') or request.form.get('slot_radio')
+        selected_court = request.form.get('selected_court') or request.form.get('court')
+
+        if slot_time_val:
+            try:
+                date_part, time_part = slot_time_val.split('|')
+            except ValueError:
+                # maybe just time
+                parts = slot_time_val.split('|')
+                date_part = request.form.get('date') or parts[0]
+                time_part = parts[-1]
+
+            # Normalize time formats for comparison
+            time_24 = time_part.strip()
+            time_ampm = _24_to_ampm(time_24)
+
+            # Look for matching slot in DB
+            c.execute('''SELECT id, is_booked, facility_id, court_number, date, time FROM slots
+                         WHERE facility_id = ? AND court_number = ? AND date = ?
+                         AND (time = ? OR time = ? OR time LIKE ?)
+                         LIMIT 1''',
+                      (selected_facility, selected_court, date_part, time_ampm, time_24, time_24 + '%'))
+            slot_row = c.fetchone()
+
+            if slot_row:
+                slot_id_db, is_booked, facility_id, court_num, date_db, time_db = slot_row
+
+                if is_booked:
+                    booking_error = 'Sorry — that slot was just booked by someone else.'
+                else:
+                    # mark booked and insert booking
+                    c.execute('UPDATE slots SET is_booked = 1 WHERE id = ?', (slot_id_db,))
+                    formatted = f"{date_db} at {time_db} (Court {court_num})"
+                    c.execute('''INSERT INTO bookings
+                                 (username, facility_id, court_number, date, time, formatted_slot)
+                                 VALUES (?, ?, ?, ?, ?, ?)''',
+                              (session['username'], facility_id, court_num, date_db, time_db, formatted))
+                    conn.commit()
+                    conn.close()
+                    return redirect('/my-bookings')
+            else:
+                booking_error = 'Selected slot is not available.'
+
+        else:
+            booking_error = 'No slot selected.'
+
+    conn.close()
+    return render_template('book.html', 
+                         facilities=facilities, 
+                         selected_facility=int(selected_facility),
+                         available_slots=available_slots,
+                         booking_error=booking_error)
     
     conn.close()
     return render_template('book.html', 
@@ -188,6 +271,27 @@ def my_bookings():
     
     conn.close()
     return render_template('my_books.html', bookings=bookings, username=session['username'])
+
+
+@app.route('/api/booked_slots')
+def api_booked_slots():
+    facility_id = request.args.get('facility')
+    date_q = request.args.get('date')
+    if not facility_id or not date_q:
+        return {'error': 'missing params'}, 400
+
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''SELECT court_number, time FROM slots WHERE facility_id = ? AND date = ? AND is_booked = 1''',
+              (facility_id, date_q))
+    rows = c.fetchall()
+    conn.close()
+
+    result = []
+    for court_num, time_val in rows:
+        time24 = ampm_to_24(time_val)
+        result.append({'court': court_num, 'time': time24})
+    return result
 
 # CANCEL BOOKING
 @app.route('/cancel/<int:booking_id>')

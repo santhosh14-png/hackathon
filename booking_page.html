@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Facility - Sports Booking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2em;
+        }
+        
+        .logout-btn {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .logout-btn:hover {
+            background: #ff5252;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        
+        .sidebar {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .facility-list {
+            list-style: none;
+        }
+        
+        .facility-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #ddd;
+        }
+        
+        .facility-item:hover {
+            background: #f0f0f0;
+            border-left-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .facility-item.active {
+            background: #667eea;
+            color: white;
+            border-left-color: #667eea;
+        }
+        
+        .facility-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .facility-item.active .facility-name {
+            color: white;
+        }
+        
+        .facility-count {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .facility-item.active .facility-count {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .main {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .main h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .slot {
+            padding: 12px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
+            max-width: none;
+            box-sizing: border-box;
+        }
+        
+        .slot:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .slot input[type="radio"] {
+            display: none;
+        }
+        
+        .slot input[type="radio"]:checked + .slot-content {
+            color: white;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+        
+        .slot label {
+            display: block;
+            cursor: pointer;
+        }
+        
+        .slot-date {
+            font-size: 0.9em;
+            color: #999;
+            margin-bottom: 8px;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot-date {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .slot-time {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+            margin: 8px 0;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot-time {
+            color: white;
+        }
+        
+        .slot-court {
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot-court {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Better slot selection styling */
+        .slot-wrapper {
+            position: relative;
+        }
+        
+        .slot {
+            display: block;
+            cursor: pointer;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot {
+            background: #667eea;
+            border-color: #667eea;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot .slot-time,
+        .slot input[type="radio"]:checked ~ .slot .slot-date,
+        .slot input[type="radio"]:checked ~ .slot .slot-court {
+            color: white;
+        }
+        
+        .booking-form {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: block;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .back-btn {
+            background: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .back-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .no-slots {
+            padding: 20px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 8px;
+            color: #856404;
+        }
+        
+        @media (max-width: 1100px) {
+            .slots-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        @media (max-width: 900px) {
+            .slots-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .content { grid-template-columns: 1fr; }
+            .slots-grid { grid-template-columns: repeat(2, 1fr); }
+            button { max-width: 320px; }
+        }
+
+        @media (max-width: 420px) {
+            .slots-grid { grid-template-columns: repeat(1, 1fr); }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Book a Facility</h1>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+        
+        <div class="content">
+            <!-- FACILITY LIST -->
+            
+            
+            <!-- TIME SLOTS -->
+            <div class="main">
+                <h3>⏰ Available Time Slots</h3>
+                
+                <!-- Facility info for JS generation -->
+                
+                    
+                
+                    
+                
+                    
+                        <div id="facility-info" data-name="Basketball Court" data-courts="1" style="display:none;"></div>
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+
+                <a href="/select-sport" class="back-btn">← Change Sport</a>
+                <form method="POST" class="booking-form">
+                    <div style="width:100%; display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
+                        <label style="font-weight:600; color:#333;">Choose date:</label>
+                        <input type="date" id="date-picker" name="date" required>
+
+                        <div id="court-container" style="display:none; align-items:center; gap:8px;">
+                            <label id="court-label" style="font-weight:600; color:#333;">Court:</label>
+                            <select id="court-select" name="court"></select>
+                        </div>
+                    </div>
+
+                    <div class="slots-grid" id="generated-slots">
+                        <!-- JS will populate one-hour slots here -->
+                    </div>
+
+                    <input type="hidden" name="slot_time" id="selected-slot-time">
+                    <input type="hidden" name="selected_court" id="selected-court-hidden">
+
+                    <button type="submit" id="confirm-btn">📝 Book Selected Slot</button>
+                </form>
+                
+                <a href="/my-bookings" class="back-btn">← View My Bookings</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function selectFacility(facilityId) {
+            window.location.href = '/book?facility=' + facilityId;
+        }
+        // --- Slot generation and selection logic ---
+        (function() {
+            const infoEl = document.getElementById('facility-info');
+            if (!infoEl) return; // nothing selected
+
+            const facilityName = (infoEl.dataset.name || '').toLowerCase();
+            const courts = parseInt(infoEl.dataset.courts || '1', 10) || 1;
+            const courtLabelEl = document.getElementById('court-label');
+
+            const datePicker = document.getElementById('date-picker');
+            const slotsContainer = document.getElementById('generated-slots');
+            const courtContainer = document.getElementById('court-container');
+            const courtSelect = document.getElementById('court-select');
+            const selectedSlotInput = document.getElementById('selected-slot-time');
+            const selectedCourtHidden = document.getElementById('selected-court-hidden');
+
+            // initialize date picker to today
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            datePicker.value = `${yyyy}-${mm}-${dd}`;
+
+            // Determine label prefix depending on sport/facility name
+            let labelPrefix = 'Court';
+            if (facilityName.includes('cricket')) labelPrefix = 'Net';
+            else if (facilityName.includes('table')) labelPrefix = 'Table';
+            else if (facilityName.includes('carrom')) labelPrefix = 'Board';
+            else if (facilityName.includes('volley')) labelPrefix = 'Court';
+
+            // Populate courts if more than one
+            if (courts > 1) {
+                courtContainer.style.display = 'flex';
+                courtSelect.innerHTML = '';
+                if (courtLabelEl) courtLabelEl.textContent = labelPrefix + ':';
+                for (let i = 1; i <= courts; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = `${labelPrefix} ${i}`;
+                    courtSelect.appendChild(opt);
+                }
+                selectedCourtHidden.value = courtSelect.value;
+                courtSelect.addEventListener('change', () => {
+                    selectedCourtHidden.value = courtSelect.value;
+                });
+            } else {
+                courtContainer.style.display = 'none';
+                selectedCourtHidden.value = '1';
+            }
+
+            function generateSlots() {
+                // Table Tennis and Carrom cutoff at 17:00 (5pm end)
+                const special = facilityName.includes('table') || facilityName.includes('carrom');
+                const startHour = 9; // 9:00
+                const endHourExclusive = special ? 18 : 21; // if special, last start is 17:00; else last start is 20:00 (slot 20-21)
+
+                slotsContainer.innerHTML = '';
+
+                for (let h = startHour; h < endHourExclusive; h++) {
+                    const slotLabel = document.createElement('label');
+                    slotLabel.className = 'slot-wrapper';
+
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'slot_radio';
+                    radio.required = true;
+                    // value: ISO date + start time
+                    const dateVal = datePicker.value;
+                    const hh = String(h).padStart(2, '0');
+                    const startTime = `${hh}:00`;
+                    radio.value = `${dateVal}|${startTime}`;
+
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = 'slot';
+
+                    const slotDateDiv = document.createElement('div');
+                    slotDateDiv.className = 'slot-date';
+                    slotDateDiv.textContent = dateVal;
+
+                    const slotTimeDiv = document.createElement('div');
+                    slotTimeDiv.className = 'slot-time';
+                    const endH = String(h + 1).padStart(2, '0');
+                    slotTimeDiv.textContent = `${hh}:00 - ${endH}:00`;
+
+                    const slotCourtDiv = document.createElement('div');
+                    slotCourtDiv.className = 'slot-court';
+                    if (courts > 1) {
+                        slotCourtDiv.textContent = `Select ${labelPrefix.toLowerCase()} above`;
+                    } else {
+                        slotCourtDiv.textContent = `${labelPrefix} 1`;
+                    }
+
+                    slotDiv.appendChild(slotDateDiv);
+                    slotDiv.appendChild(slotTimeDiv);
+                    slotDiv.appendChild(slotCourtDiv);
+
+                    slotLabel.appendChild(radio);
+                    slotLabel.appendChild(slotDiv);
+
+                    // when selected, update hidden inputs so server gets chosen values
+                    radio.addEventListener('change', (ev) => {
+                        selectedSlotInput.value = ev.target.value; // date|HH:MM
+                        selectedCourtHidden.value = courtSelect ? courtSelect.value || '1' : '1';
+                    });
+
+                    slotsContainer.appendChild(slotLabel);
+                }
+            }
+
+            // Regenerate slots when date changes
+            datePicker.addEventListener('change', generateSlots);
+            // Also regenerate when court changes (just to keep values in sync)
+            if (courtSelect) courtSelect.addEventListener('change', generateSlots);
+
+            // initial generation
+            generateSlots();
+        })();
+    </script>
+</body>
+</html>
