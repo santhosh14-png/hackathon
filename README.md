@@ -29,5 +29,16 @@ with the new courts built, we identified theres issues where clashes happen betw
 SETUP PROCESS:
 
 create a repo on github
+
 clone the repo
-...
+
+Activate the virtual environment:
+
+Install dependencies using the requirements file:
+
+Run the application:
+
+Execute python app.py to start the Flask server.
+
+Access the site:
+
