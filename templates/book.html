@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Facility - Sports Booking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2em;
+        }
+        
+        .logout-btn {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .logout-btn:hover {
+            background: #ff5252;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        
+        .sidebar {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .facility-list {
+            list-style: none;
+        }
+        
+        .facility-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #ddd;
+        }
+        
+        .facility-item:hover {
+            background: #f0f0f0;
+            border-left-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .facility-item.active {
+            background: #667eea;
+            color: white;
+            border-left-color: #667eea;
+        }
+        
+        .facility-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .facility-item.active .facility-name {
+            color: white;
+        }
+        
+        .facility-count {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .facility-item.active .facility-count {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .main {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .main h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .slot {
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .slot:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .slot input[type="radio"] {
+            display: none;
+        }
+        
+        .slot input[type="radio"]:checked + .slot-content {
+            color: white;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+        
+        .slot label {
+            display: block;
+            cursor: pointer;
+        }
+        
+        .slot-date {
+            font-size: 0.9em;
+            color: #999;
+            margin-bottom: 8px;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot-date {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .slot-time {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+            margin: 8px 0;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot-time {
+            color: white;
+        }
+        
+        .slot-court {
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot-court {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Better slot selection styling */
+        .slot-wrapper {
+            position: relative;
+        }
+        
+        .slot {
+            display: block;
+            cursor: pointer;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot {
+            background: #667eea;
+            border-color: #667eea;
+        }
+        
+        .slot input[type="radio"]:checked ~ .slot .slot-time,
+        .slot input[type="radio"]:checked ~ .slot .slot-date,
+        .slot input[type="radio"]:checked ~ .slot .slot-court {
+            color: white;
+        }
+        
+        .booking-form {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .back-btn {
+            background: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .back-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .no-slots {
+            padding: 20px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 8px;
+            color: #856404;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .slots-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Book a Facility</h1>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+        
+        <div class="content">
+            <!-- FACILITY LIST -->
+            <div class="sidebar">
+                <h3>🏢 Facilities</h3>
+                <ul class="facility-list">
+                    {% for facility in facilities %}
+                    <li class="facility-item {% if facility[0] == selected_facility %}active{% endif %}"
+                        onclick="selectFacility({{ facility[0] }})">
+                        <div class="facility-name">{{ facility[1] }}</div>
+                        <div class="facility-count">{{ facility[3] }} court(s) • {{ facility[2] }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- TIME SLOTS -->
+            <div class="main">
+                <h3>⏰ Available Time Slots</h3>
+                
+                {% if available_slots %}
+                <form method="POST" class="booking-form">
+                    <div class="slots-grid">
+                        {% for slot in available_slots %}
+                        <label class="slot-wrapper">
+                            <input type="radio" name="slot_id" value="{{ slot[0] }}" required>
+                            <div class="slot">
+                                <div class="slot-date">{{ slot[3] }}</div>
+                                <div class="slot-time">{{ slot[4] }}</div>
+                                <div class="slot-court">Court {{ slot[2] }}</div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <button type="submit">📝 Book Selected Slot</button>
+                </form>
+                {% else %}
+                <div class="no-slots">
+                    <strong>No available slots</strong> for this facility. Try selecting another facility!
+                </div>
+                {% endif %}
+                
+                <a href="/my-bookings" class="back-btn">← View My Bookings</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function selectFacility(facilityId) {
+            window.location.href = '/book?facility=' + facilityId;
+        }
+    </script>
+</body>
+</html>
