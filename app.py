@@ -31,6 +31,15 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS bookings 
                  (id INTEGER PRIMARY KEY, username TEXT, facility_id INTEGER, 
                   court_number INTEGER, date TEXT, time TEXT, formatted_slot TEXT)''')
+
+    # Events table
+    c.execute('''CREATE TABLE IF NOT EXISTS events
+                 (id INTEGER PRIMARY KEY, creator TEXT, facility_id INTEGER,
+                  court_number INTEGER, date TEXT, time TEXT, name TEXT, description TEXT)''')
+
+    # Event signups
+    c.execute('''CREATE TABLE IF NOT EXISTS event_signups
+                 (id INTEGER PRIMARY KEY, event_id INTEGER, username TEXT)''')
     
     # Check if facilities table is empty, if so add our facilities
     c.execute('SELECT COUNT(*) FROM facilities')
@@ -67,6 +76,58 @@ def init_db():
     
     conn.commit()
     conn.close()
+
+
+def ensure_event_tables():
+    """Ensure `events` and `event_signups` tables have required columns (migrate if needed)."""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+
+    # Ensure events table exists
+    c.execute("CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY)")
+
+    # required columns for events
+    required = [
+        ('creator', 'TEXT'),
+        ('facility_id', 'INTEGER'),
+        ('court_number', 'INTEGER'),
+        ('date', 'TEXT'),
+        ('time', 'TEXT'),
+        ('name', 'TEXT'),
+        ('description', 'TEXT'),
+    ]
+
+    c.execute("PRAGMA table_info('events')")
+    existing = {row[1] for row in c.fetchall()}  # column names
+
+    for col, coltype in required:
+        if col not in existing:
+            try:
+                c.execute(f"ALTER TABLE events ADD COLUMN {col} {coltype}")
+            except Exception:
+                pass
+
+    # Ensure event_signups table exists
+    c.execute("CREATE TABLE IF NOT EXISTS event_signups (id INTEGER PRIMARY KEY)")
+    c.execute("PRAGMA table_info('event_signups')")
+    existing2 = {row[1] for row in c.fetchall()}
+    required2 = [
+        ('event_id', 'INTEGER'),
+        ('username', 'TEXT'),
+    ]
+    for col, coltype in required2:
+        if col not in existing2:
+            try:
+                c.execute(f"ALTER TABLE event_signups ADD COLUMN {col} {coltype}")
+            except Exception:
+                pass
+
+    conn.commit()
+    conn.close()
+
+
+# Ensure migrations
+ensure_event_tables()
 
 
 def ampm_to_24(time_str):
@@ -246,6 +307,76 @@ def book():
                          selected_facility=int(selected_facility),
                          available_slots=available_slots,
                          booking_error=booking_error)
+
+
+# EVENTS PAGE - create event + list upcoming
+@app.route('/events', methods=['GET', 'POST'])
+def events():
+    if 'username' not in session:
+        return redirect('/login')
+
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+
+    # facilities for form
+    c.execute('SELECT id, name, sport, count FROM facilities')
+    facilities = c.fetchall()
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        facility_id = request.form.get('facility')
+        court = request.form.get('court') or None
+        date = request.form.get('date')
+        time = request.form.get('time')
+
+        if name and facility_id and date and time:
+            c.execute('''INSERT INTO events (creator, facility_id, court_number, date, time, name, description)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                      (session['username'], facility_id, court, date, time, name, description))
+            conn.commit()
+            conn.close()
+            return redirect('/events')
+
+    # get upcoming events (today onwards)
+    today = datetime.now().strftime('%Y-%m-%d')
+    c.execute('''SELECT e.id, e.creator, f.name, e.court_number, e.date, e.time, e.name, e.description,
+                        (SELECT COUNT(*) FROM event_signups s WHERE s.event_id = e.id) as signup_count
+                 FROM events e
+                 JOIN facilities f ON e.facility_id = f.id
+                 WHERE date >= ?
+                 ORDER BY date, time''', (today,))
+    events = c.fetchall()
+    conn.close()
+
+    return render_template('events.html', facilities=facilities, events=events, username=session['username'])
+
+
+@app.route('/events/<int:event_id>/signup')
+def event_signup(event_id):
+    if 'username' not in session:
+        return redirect('/login')
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    # prevent double signup
+    c.execute('SELECT id FROM event_signups WHERE event_id = ? AND username = ?', (event_id, session['username']))
+    if not c.fetchone():
+        c.execute('INSERT INTO event_signups (event_id, username) VALUES (?, ?)', (event_id, session['username']))
+        conn.commit()
+    conn.close()
+    return redirect('/events')
+
+
+@app.route('/events/<int:event_id>/cancel')
+def event_cancel_signup(event_id):
+    if 'username' not in session:
+        return redirect('/login')
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('DELETE FROM event_signups WHERE event_id = ? AND username = ?', (event_id, session['username']))
+    conn.commit()
+    conn.close()
+    return redirect('/events')
     
     conn.close()
     return render_template('book.html', 

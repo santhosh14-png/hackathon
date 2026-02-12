@@ -11,7 +11,8 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0b0b0d;
+            color: #e6eef8;
             min-height: 100vh;
             padding: 20px;
         }
@@ -19,39 +20,41 @@
         .container {
             max-width: 1000px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            background: #0f1113;
+            border-radius: 12px;
+            padding: 26px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+            border: 1px solid #1f2933;
         }
         
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #eee;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #212428;
         }
         
         h1 {
-            color: #333;
-            font-size: 2em;
+            color: #e6eef8;
+            font-size: 1.9em;
         }
         
         .logout-btn {
-            background: #ff6b6b;
+            background: #ef4444;
             color: white;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.04);
         }
-        
+
         .logout-btn:hover {
-            background: #ff5252;
+            background: #f87272;
         }
         
         .content {
@@ -61,16 +64,17 @@
         }
         
         .sidebar {
-            background: #f5f5f5;
-            padding: 20px;
+            background: #0b1220;
+            padding: 18px;
             border-radius: 10px;
             height: fit-content;
+            border: 1px solid #213040;
         }
-        
+
         .sidebar h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.2em;
+            color: #e6eef8;
+            margin-bottom: 12px;
+            font-size: 1.1em;
         }
         
         .facility-list {
@@ -80,54 +84,56 @@
         .facility-item {
             padding: 12px;
             margin: 8px 0;
-            background: white;
+            background: #0e1114;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
-            border-left: 4px solid #ddd;
+            transition: all 0.2s;
+            border-left: 4px solid #191b1d;
+            border: 1px solid #1f2933;
         }
-        
+
         .facility-item:hover {
-            background: #f0f0f0;
-            border-left-color: #667eea;
-            transform: translateX(5px);
+            background: #0f1522;
+            border-left-color: #4f46e5;
+            transform: translateX(4px);
         }
-        
+
         .facility-item.active {
-            background: #667eea;
+            background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%);
             color: white;
-            border-left-color: #667eea;
+            border-left-color: #4f46e5;
         }
         
         .facility-name {
-            font-weight: bold;
-            color: #333;
+            font-weight: 700;
+            color: #e6eef8;
         }
-        
+
         .facility-item.active .facility-name {
             color: white;
         }
-        
+
         .facility-count {
             font-size: 0.85em;
-            color: #999;
+            color: #9fb8ff;
             margin-top: 5px;
         }
-        
+
         .facility-item.active .facility-count {
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
         }
         
         .main {
-            background: #f9f9f9;
-            padding: 20px;
+            background: #0e1114;
+            padding: 18px;
             border-radius: 10px;
+            border: 1px solid #1f2933;
         }
-        
+
         .main h3 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.3em;
+            color: #e6eef8;
+            margin-bottom: 18px;
+            font-size: 1.15em;
         }
         
         .slots-grid {
@@ -138,18 +144,20 @@
         }
         
         .slot {
-            padding: 15px;
-            background: white;
-            border: 2px solid #ddd;
+            padding: 14px;
+            background: #0b1220;
+            border: 1px solid #23282d;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.18s;
             text-align: center;
+            color: #dbe9ff;
         }
-        
+
         .slot:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            border-color: #4f46e5;
+            box-shadow: 0 6px 18px rgba(79, 70, 229, 0.08);
+            transform: translateY(-3px);
         }
         
         .slot input[type="radio"] {
@@ -172,8 +180,8 @@
         }
         
         .slot-date {
-            font-size: 0.9em;
-            color: #999;
+            font-size: 0.85em;
+            color: #9fb8ff;
             margin-bottom: 8px;
         }
         
@@ -182,9 +190,9 @@
         }
         
         .slot-time {
-            font-weight: bold;
-            font-size: 1.1em;
-            color: #333;
+            font-weight: 800;
+            font-size: 1.05em;
+            color: #e6eef8;
             margin: 8px 0;
         }
         
@@ -194,7 +202,7 @@
         
         .slot-court {
             font-size: 0.85em;
-            color: #666;
+            color: #b8c7dd;
         }
         
         .slot input[type="radio"]:checked ~ .slot-court {
@@ -231,18 +239,19 @@
         
         button {
             padding: 12px 28px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%);
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 1.05em;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.18s;
             display: block;
             width: 100%;
             max-width: 360px;
             text-align: center;
+            border: 1px solid rgba(255,255,255,0.04);
         }
         
         button:hover {
@@ -256,17 +265,18 @@
         }
         
         .back-btn {
-            background: #f0f0f0;
-            color: #333;
-            padding: 10px 20px;
+            background: #0b1220;
+            color: #9fb8ff;
+            padding: 10px 18px;
             text-decoration: none;
             display: inline-block;
             border-radius: 8px;
             margin-top: 20px;
+            border: 1px solid #213040;
         }
-        
+
         .back-btn:hover {
-            background: #e0e0e0;
+            background: #0f1522;
         }
         
         .no-slots {
@@ -301,7 +311,10 @@
     <div class="container">
         <div class="header">
             <h1>📅 Book a Facility</h1>
-            <a href="/logout" class="logout-btn">Logout</a>
+            <div style="display:flex;gap:10px;align-items:center">
+                <a href="/events" class="logout-btn" style="background:#374151;padding:8px 12px;border-radius:8px;">Events</a>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
         </div>
         
         <div class="content">
@@ -337,11 +350,11 @@
 
                 <form method="POST" class="booking-form">
                     <div style="width:100%; display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
-                        <label style="font-weight:600; color:#333;">Choose date:</label>
+                        <label style="font-weight:600; color:#e6eef8;">Choose date:</label>
                         <input type="date" id="date-picker" name="date" required>
 
                         <div id="court-container" style="display:none; align-items:center; gap:8px;">
-                            <label style="font-weight:600; color:#333;">Court:</label>
+                            <label style="font-weight:600; color:#e6eef8;">Court:</label>
                             <select id="court-select" name="court"></select>
                         </div>
                     </div>

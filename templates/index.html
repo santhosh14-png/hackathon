@@ -11,7 +11,8 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0b0b0d; /* dark background */
+            color: #e6eef8;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -20,24 +21,25 @@
         }
         
         .container {
-            background: white;
-            border-radius: 15px;
-            padding: 50px;
+            background: #121217; /* dark card */
+            border-radius: 12px;
+            padding: 42px;
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            max-width: 600px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+            max-width: 640px;
+            border: 1px solid #1f2933;
         }
         
         h1 {
-            color: #333;
+            color: #e6eef8;
             margin-bottom: 10px;
-            font-size: 2.5em;
+            font-size: 2.2em;
         }
         
         .subtitle {
-            color: #666;
-            font-size: 1.1em;
-            margin-bottom: 40px;
+            color: #a8b3c7;
+            font-size: 1.05em;
+            margin-bottom: 28px;
         }
         
         .button-group {
@@ -49,16 +51,17 @@
         
         a {
             display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            padding: 12px 28px;
+            margin: 8px;
+            background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%);
+            color: #fff;
             text-decoration: none;
             border-radius: 8px;
-            font-size: 1.1em;
-            font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
-            min-width: 200px;
+            font-size: 1.05em;
+            font-weight: 700;
+            transition: transform 0.15s, box-shadow 0.15s;
+            min-width: 180px;
+            border: 1px solid rgba(255,255,255,0.04);
         }
         
         a:hover {
@@ -72,7 +75,7 @@
         }
         
         .features h3 {
-            color: #333;
+            color: #e6eef8;
             margin-bottom: 20px;
         }
         
@@ -82,9 +85,9 @@
         
         .feature-list li {
             padding: 10px;
-            color: #666;
-            margin: 5px 0;
-            padding-left: 30px;
+            color: #a8b3c7;
+            margin: 6px 0;
+            padding-left: 34px;
             position: relative;
         }
         
@@ -92,9 +95,9 @@
             content: "✓";
             position: absolute;
             left: 0;
-            color: #667eea;
-            font-weight: bold;
-            font-size: 1.2em;
+            color: #60a5fa;
+            font-weight: 800;
+            font-size: 1.1em;
         }
     </style>
 </head>
@@ -108,16 +111,7 @@
             <a href="/book">Browse Facilities</a>
         </div>
         
-        <div class="features">
-            <h3>Why Use Our App?</h3>
-            <ul class="feature-list">
-                <li>Easy booking in just 2 clicks</li>
-                <li>9 different sports facilities</li>
-                <li>Multiple courts available</li>
-                <li>View all your bookings</li>
-                <li>Cancel anytime</li>
-            </ul>
-        </div>
+        
     </div>
 </body>
 </html>

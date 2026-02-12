@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Events - Sports Booking</title>
+    <style>
+        body{font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif;background:#0b0b0d;color:#e6eef8;padding:24px}
+        .card{max-width:1100px;margin:0 auto;background:#0f1113;padding:18px;border-radius:12px;border:1px solid #1f2933}
+        h1{margin-bottom:6px}
+        .layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+        .form, .list{background:#0b1220;padding:14px;border-radius:10px;border:1px solid #213040}
+        label{display:block;color:#9fb8ff;font-weight:700;margin-bottom:6px}
+        input, select, textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #23282d;background:#0f1113;color:#dfe9f8;margin-bottom:10px}
+        button{padding:10px 16px;background:linear-gradient(135deg,#4f46e5 0%,#6d28d9 100%);color:#fff;border:none;border-radius:8px;cursor:pointer}
+        .event{padding:12px;border-radius:8px;background:#0e1114;border:1px solid #1f2933;margin-bottom:10px}
+        .event h3{margin:0;color:#e6eef8}
+        .small{color:#b8c7dd;font-size:0.9em}
+        .actions{margin-top:8px}
+        .signup{background:#10b981;padding:8px 12px;border-radius:6px;color:white;text-decoration:none}
+        .cancel{background:#ef4444;padding:8px 12px;border-radius:6px;color:white;text-decoration:none}
+        .meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Events</h1>
+        <p class="small">Create events, request players, and sign up for upcoming events.</p>
+        <div class="layout">
+            <div class="form">
+                <h2 style="margin-top:0">Create Event</h2>
+                <form method="POST">
+                    <label>Event Name</label>
+                    <input type="text" name="name" required>
+                    <label>Description</label>
+                    <textarea name="description" rows="3"></textarea>
+                    <label>Facility</label>
+                    <select name="facility" id="facility-select" required>
+                        <option value="">-- choose facility --</option>
+                        {% for f in facilities %}
+                        <option value="{{ f[0] }}" data-courts="{{ f[3] }}">{{ f[1] }} ({{ f[2] }})</option>
+                        {% endfor %}
+                    </select>
+                    <div id="court-block" style="display:none;">
+                        <label>Court (optional)</label>
+                        <select name="court" id="court-select"></select>
+                    </div>
+                    <label>Date</label>
+                    <input type="date" name="date" required>
+                    <label>Start time (HH:MM, 24h)</label>
+                    <select name="time">
+                        {% for h in range(9,21) %}
+                        <option value="{{ '%02d:00' % h }}">{{ '%02d:00' % h }}</option>
+                        {% endfor %}
+                    </select>
+                    <div style="margin-top:10px">
+                        <button type="submit">Create Event</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="list">
+                <h2 style="margin-top:0">Upcoming Events</h2>
+                {% if events %}
+                    {% for e in events %}
+                    <div class="event">
+                        <h3>{{ e[6] }}</h3>
+                        <div class="small">📍 {{ e[2] }}{% if e[3] %} • Court {{ e[3] }}{% endif %} • 🗓 {{ e[4] }} • ⏰ {{ e[5] }}</div>
+                        <p style="margin:8px 0;color:#b8c7dd">{{ e[7] }}</p>
+                        <div class="meta">
+                            <div class="small">Created by: {{ e[1] }}</div>
+                            <div class="small">Players: {{ e[8] }}</div>
+                        </div>
+                        <div class="actions">
+                            <a href="/events/{{ e[0] }}/signup" class="signup">Sign Up</a>
+                            <a href="/events/{{ e[0] }}/cancel" class="cancel">Cancel</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="small">No upcoming events.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+<script>
+document.getElementById('facility-select')?.addEventListener('change', function(e){
+    const opt = e.target.selectedOptions[0];
+    if(!opt) return;
+    const courts = parseInt(opt.dataset.courts||'1',10);
+    const block = document.getElementById('court-block');
+    const sel = document.getElementById('court-select');
+    if(courts>1){
+        block.style.display='block';
+        sel.innerHTML='';
+        for(let i=1;i<=courts;i++){ const o=document.createElement('option'); o.value=i;o.textContent='Court '+i; sel.appendChild(o); }
+    } else { block.style.display='none'; sel.innerHTML=''; }
+});
+</script>
+</body>
+</html>
